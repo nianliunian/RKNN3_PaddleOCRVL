@@ -3,7 +3,12 @@
 RKNN3 版本 PaddleOCR-VL 的 Python 封装，使用 pybind11 将 C++ 推理代码打包为 Python 扩展模块。
 
 ## 目录结构
-模型文件来自于官方python导出的模型。
+模型文件使用官方python导出模型的方法获得。非本demo重点。
+
+---
+- 本demo，全流程在RK_EVB10_RK3588上完成。如果在pc侧编译，需要调整测试交叉编译脚本并下载相关的gcc、cmake等依赖。
+---
+
 ```
 examples/paddleocr_vl/
 ├── cpp/                          # 原有 C++ 推理代码（零改动）
