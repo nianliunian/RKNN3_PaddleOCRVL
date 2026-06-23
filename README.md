@@ -16,7 +16,9 @@ examples/paddleocr_vl/
     ├── COMPILE_PLANS.md          # 编译方案说明
     └── BUILD_AND_TEST.md         # 编译部署文档
     └── README_CS_Demo.md         # C/S 推理Demo文档
-    └── README.md                 # 本文件
+    └── paddleocr_vl_client.py    # C/S 推理客户端
+    └── paddleocr_vl_server.py    # C/S 推理服务端
+    README.md                     # 本文件
 ```
 
 ## 安装依赖
