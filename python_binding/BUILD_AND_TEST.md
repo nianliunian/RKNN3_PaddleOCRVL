@@ -5,13 +5,6 @@
 将 PaddleOCR-VL 的 C++ 推理代码通过 pybind11 封装为 Python 模块 `paddleocr_vl`，可在 RK3588 板端直接通过 Python 调用模型进行 OCR 推理。
 
 ### 目录结构
-需要先拉取rknn3-model-zoo的仓库https://github.com/airockchip/rknn3-model-zoo，然后将`python_binding`放置到如下目录所示。
-
----
-- 本demo，全流程在RK_EVB10_RK3588上完成，理论上在PC侧交叉编译后将包push到板端也可以
-- 本demo，全流程在RK_EVB10_RK3588上完成，理论上在PC侧交叉编译后将包push到板端也可以
-- 本demo，全流程在RK_EVB10_RK3588上完成，理论上在PC侧交叉编译后将包push到板端也可以
----
 
 ```
 paddleocr_vl/
@@ -47,7 +40,7 @@ paddleocr_vl/
 
 ```bash
 # 检查 Python 版本
-python3 --version    # 需 3.11，可以使用venv的虚拟环境
+python3 --version    # 需 3.11
 
 # 检查 pybind11
 python3 -c "import pybind11; print(pybind11.get_cmake_dir())"
@@ -57,7 +50,7 @@ gcc --version
 cmake --version
 ```
 
-### 2.3 编译步骤
+### 2.3 编译方式1
 
 ```bash
 cd /root/demo_paddleocr_vl/rknn3-model-zoo/examples/paddleocr_vl/python_binding
@@ -87,7 +80,7 @@ make -j$(nproc)
 ```
 build/build_local_rk3588_Release/paddleocr_vl.cpython-311-aarch64-linux-gnu.so
 ```
-
+### 2.5 编译方式2
 也可以使用 build_local.sh 一键编译：
 
 ```bash
@@ -98,7 +91,7 @@ bash build_local.sh -t rk3588 -b Release
 
 ### 3.1 模型文件准备
 
-模型文件需放在统一目录，默认路径 /root/demo_paddleocr_vl/model/，结构如下：
+模型文件需放在统一目录，如默认路径 /root/demo_paddleocr_vl/model/，结构如下：
 
 ```
 model/
@@ -305,3 +298,41 @@ ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=20 root@192.168.1.102 "pyth
 **说明**：`vlm.cc` 和 `main.cc` 中定义了全局变量（如 `SAMPLE_PARAMS`、`prompt_prefix`、`prompt_postfix` 等）和回调函数（`result_callback`、`tokenizer_callback`、`embed_callback`），与 `pybind_module.cc` 中的定义冲突。
 
 **解决**：CMakeLists.txt 中已通过 `foreach` 排除了 `main.cc` 和 `vlm.cc`，`pybind_module.cc` 重新定义了这些全局变量和回调，确保符号唯一。核心推理逻辑（`paddleocr_vl.cc`、`llm/`、`vision/`、`mlpar/`）被共享链接。
+
+## Layout + VLM Pipeline (new)
+
+### Run as HTTP service (board)
+
+```bash
+source /userdata/venv/bin/activate
+cd python_binding
+python paddleocr_vl_server.py --port 8080
+```
+
+Endpoints:
+- `POST /ocr_layout_image` — multipart `image`, optional `layout_threshold`, `visualize=true|false`
+- `POST /ocr_layout_pdf` — multipart `file`, optional `layout_threshold`, `dpi`, `pages="1-5,7"`, `visualize`
+
+### Run as CLI (board, no HTTP)
+
+```bash
+python run_pipeline.py --image /path/to/image.png --output_dir ./output
+python run_pipeline.py --pdf /path/to/doc.pdf --output_dir ./output
+```
+
+### Run client (PC or board)
+
+```bash
+python paddleocr_vl_client.py --server http://192.168.46.104:8080 --layout_image test.png
+python paddleocr_vl_client.py --server http://192.168.46.104:8080 --layout_pdf doc.pdf --pages "1-5,8"
+```
+
+### Run unit tests (PC, conda manba_env)
+
+Tests do NOT require the paddleocr_vl .so or ONNX runtime — VLMRunnerSo and DocLayoutRunner are mocked.
+
+```bash
+conda activate manba_env
+cd python_binding
+python -m pytest tests/ -v
+```

@@ -5,7 +5,9 @@ import paddleocr_vl
 
 model = paddleocr_vl.PaddleOCRVL()
 model.init(r"/root/demo_paddleocr_vl/model", vision_core_mask=0xff, mlpar_core_mask=0xff, llm_core_mask=0xff)
-result = model.run(r"/root/demo_paddleocr_vl/model/test.png")
+path_r = r'/root/demo_paddleocr_vl/pdf_process/output_pdf/page0_scale2.0_pymupdf.png'
+#result = model.run(r"/root/demo_paddleocr_vl/model/test.png")
+result = model.run(path_r, "table")
 
 print()
 print("=" * 90)
