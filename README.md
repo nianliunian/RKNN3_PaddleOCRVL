@@ -217,7 +217,7 @@ model/
 
 ### 初始化流程
 
-1. 加载 tokenizer（`Tokenizer` 库）
+1. 加载 tokenizer（`Tokenizer` 库），加载PP-DocLayoutV2_onnx
 2. mmap 加载 embedding 文件（`embed.bin`）
 3. 配置 LLM 参数（sampling 参数、vocab_info）
 4. 注册自定义 callback（收集 LLM 输出文本，而非 printf）
@@ -227,7 +227,8 @@ model/
 ### 推理流程
 
 1. 读取图片 → `image_buffer_t`
-2. 构建 prompt（自动添加 `<image>` 标签）
+2. PP-DocLayoutV2 onnx完成布局检测，裁剪bbox
+2. 根据bbox的label，完成prompt 映射，构建 prompt（自动添加 `<image>` 标签）
 3. 构建 `rknn3_llm_multimodal_tensor`
 4. 调用 `inference_paddleocr_vl_model()`
 5. 收集 result_callback 输出的文本
